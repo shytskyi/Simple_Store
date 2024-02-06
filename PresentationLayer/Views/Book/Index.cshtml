@@ -1,0 +1,16 @@
+﻿@model Book
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<h1>@Model.Title</h1>
+@*<p><strong>@Model.Author.Name</strong> </p>*@
+<p><strong>@Model.Author</strong></p>
+<p>@Model.Description</p>
+<p> Price <strong>$@Model.Price</strong></p>
+<form asp-area="" asp-controller="Order" asp-action="AddItem" method="post">
+    <input type="hidden" name="bookId" value="@Model.Id" />
+  @*<input type="hidden" name="count" value="1" />*@
+    <button class="btn btn-outline-success" type="submit">InCart</button>
+</form>

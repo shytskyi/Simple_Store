@@ -1,0 +1,60 @@
+﻿@*@model OrderModelDTO*@
+@model ConfirmationModel
+@{
+    ViewData["Title"] = "Сonfirmation phone";
+}
+
+<div class="align-content-center">
+    <h1>Сonfirmation phone number</h1>
+</div>
+
+
+
+@*<form class="form-inline" asp-controller="Order" asp-action="ConfirmCellPhone" method="post">
+    <input type="hidden" name="id" value="@Model.CellPhone" />
+    <div class="form-group">
+        <label for="confirmationCode">Confirmation Code</label>
+        <input type="text" class="form-control" name="confirmationCode" placeholder="0000" />
+        @if (Model.Errors.ContainsKey("confirmationCode"))
+        {
+            <small class="form-text text-danger">@Model.Errors["confirmationCode"]</small>
+        }
+    </div>
+    <button type="submit" class="btn btn-success">Verify</button>
+ </form>
+
+<form asp-controller="Order" asp-action="SendConfirmationCode" method="post">
+    <div class="form-group">
+        <label for="cellPhone">Phone Number</label>
+        <input type="text" class="form-control" name="cellPhone" value="@Model.CellPhone" />
+        @if (Model.Errors.ContainsKey("cellPhone"))
+        {
+            <small class="form-text text-danger">@Model.Errors["cellPhone"]</small>
+        }
+    </div>
+    <button type="submit" class="btn btn-success">Repeat code</button>
+</form>*@
+
+
+<form asp-controller="Order" asp-action="StartDelivery" method="post">
+    <input type="hidden" name="id" value="@Model.OrderId" />
+    <input type="hidden" name="cellPhone" value="@Model.CellPhone" />
+    <div class="form-group">
+        <label for="code">Confirmation Code</label>
+        <input type="text" class="form-control" name="code" placeholder="0000" />
+        @if (Model.Errors.ContainsKey("code"))
+        {
+            <small class="form-text text-danger">@Model.Errors["code"]</small>
+        }
+    </div>
+    <button type="submit" class="btn btn-success">Verify</button>
+</form>
+
+<form asp-controller="Order" asp-action="SendConfirmationCode" method="post">
+    <input type="hidden" name="id" value="@Model.OrderId" />
+    <div class="form-group">
+        <label for="cellPhone">Phone Number</label>
+        <input type="text" class="form-control" name="cellPhone" value="@Model.CellPhone" />
+    </div>
+    <button type="submit" class="btn btn-success">Repeat Code</button>
+</form>               

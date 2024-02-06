@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Simple online BOOK Store</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/PresentationLayer.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm  navbar-light bg-white">
+            @*<a class="navbar-brand" href="@Url.Action("Index", "Home")">BOOK Store</a>*@
+            <a class="navbar-brand"  asp-area="" asp-controller="Home" asp-action="Index">BOOK Store</a>
+            <span class="navbar-text ml-auto">
+                @{
+                    if (Context.Session.TryGetCart(out Cart cart) && cart.TotalCount > 0)
+                    {
+                        <a asp-controller="Order" asp-action="Index">You have @cart.TotalCount items, Amount @cart.TotalPrice</a>
+                        //@:You have @cart.TotalCount items, Amount @cart.TotalPrice
+                    }
+                    else
+                    {
+                        @:the cart is empty
+                    }
+                }
+            </span>
+        </nav>
+    </header>
+    <div class="container">
+        <main>
+            <div class="align-content-center">
+                <form class="form-check-inline my-2 my-lg-0" asp-area="" asp-controller="Search" asp-action="Index" method="get">
+                    <input class="form-control mr-sm-2" type="search" name="query" placeholder="author or title or isbn" />
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form>
+            </div>
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2024 - Simple online BOOK Store by Ivan Shytskyi - <a asp-area="" asp-controller="Home" asp-action="Index">Go home page</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
