@@ -1,3 +1,4 @@
+# status of the project is development
 # Repository Description: Simple Store Project
 
 This Git repository hosts the source code for the "Simple Store" project. A web application developed in Visual Studio using the C# programming language, built on the .NET Framework Core and ASP.NET Core technologies. 
