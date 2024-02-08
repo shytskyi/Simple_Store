@@ -1,4 +1,5 @@
 using BusinessLogicLayer;
+using BusinessLogicLayer.Interfaces;
 using BusinessLogicLayer.Messages;
 using DataAccessLayer.Interfaces;
 using DataAccessLayer.Repository;
@@ -24,6 +25,7 @@ namespace PresentationLayer
             builder.Services.AddSingleton<INotificationService, DebugNotificationService>();
             builder.Services.AddSingleton<IBookRepository, BookRepository>();
             builder.Services.AddSingleton<IOrderRepositiry, OrderRepository>();
+            builder.Services.AddSingleton<IDeliveryService, PostamateDeliveryService>();
             builder.Services.AddSingleton<BookService>();
 
             var app = builder.Build();

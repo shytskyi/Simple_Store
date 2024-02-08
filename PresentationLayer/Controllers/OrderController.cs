@@ -1,4 +1,5 @@
-﻿using BusinessLogicLayer.Messages;
+﻿using BusinessLogicLayer.Interfaces;
+using BusinessLogicLayer.Messages;
 using DataAccessLayer.Interfaces;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -12,12 +13,14 @@ namespace PresentationLayer.Controllers
         private readonly IOrderRepositiry _orderRepositiry;
         private readonly IBookRepository _bookRepository;
         private readonly INotificationService _notificationService;
+        private readonly IEnumerable<IDeliveryService> _deliveryService;
 
-        public OrderController(IBookRepository bookRepository, IOrderRepositiry orderRepositiry, INotificationService notificationService)
+        public OrderController(IBookRepository bookRepository, IOrderRepositiry orderRepositiry, INotificationService notificationService, IEnumerable<IDeliveryService> deliveryService)
         {
             _bookRepository = bookRepository;
             _orderRepositiry = orderRepositiry;
             _notificationService = notificationService;
+            _deliveryService = deliveryService;
         }
 
         [HttpGet]
@@ -145,36 +148,65 @@ namespace PresentationLayer.Controllers
         }
 
         [HttpPost]
-        public IActionResult StartDelivery (int id, string cellPhone, int code)
+        public IActionResult Confirmate(int id, string cellPhone, int code)
         {
             int? storedCode = HttpContext.Session.GetInt32(cellPhone);
-            if(storedCode == null)
+            if (storedCode == null)
             {
                 return View("Confirmation", new ConfirmationModel
-                                            {
-                                                OrderId = id,
-                                                CellPhone = cellPhone,
-                                                Errors = new Dictionary<string, string>
+                {
+                    OrderId = id,
+                    CellPhone = cellPhone,
+                    Errors = new Dictionary<string, string>
                                                 {
                                                     { "code", "Time to enter code has expired. Try again." }
                                                 },
-                                            }); 
+                });
             }
 
-            if(storedCode != code)
+            if (storedCode != code)
             {
                 return View("Confirmation", new ConfirmationModel
-                                            {
-                                                OrderId = id,
-                                                CellPhone = cellPhone,
-                                                Errors = new Dictionary<string, string>
+                {
+                    OrderId = id,
+                    CellPhone = cellPhone,
+                    Errors = new Dictionary<string, string>
                                                 {
                                                     { "code", "Incorrect code. Check and try again." }
                                                 },
-                                            });
+                });
             }
-            //
-            return View();
+
+            // todo: save CellPhone
+
+            HttpContext.Session.Remove(cellPhone);
+            var model = new DeliveryModel
+            {
+                OrderId = id,
+                Methods = _deliveryService.ToDictionary(service => service.UniqueCode, service => service.Name)
+            };
+            return View("DeliveryMethod", model);
+        }
+
+        [HttpPost]
+        public IActionResult StartDelivery (int id, string uniqueCode)
+        {
+            var deliveryService = _deliveryService.Single(service => service.UniqueCode == uniqueCode);
+            var order = _orderRepositiry.GetById(id);
+            var form = deliveryService.CreateForm(order);
+            return View("DeliveryStep", form);
+        }
+
+        [HttpPost]
+        public IActionResult NextDelivery (int id, string uniqueCode, int step, Dictionary<string, string> values) 
+        {
+            var deliveryService = _deliveryService.Single(service => service.UniqueCode == uniqueCode);
+            var form = deliveryService.MoveNext(id, step, values);
+            if (form.IsFinal)
+            {
+                return null;
+            }
+            return View("DeliveryStep", form);
         }
     }
 }
