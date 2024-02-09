@@ -1,0 +1,23 @@
+﻿@model DeliveryModel
+
+@{
+    ViewData["Title"] = "Payment";
+}
+
+<h1 class="align-content-center">Payment</h1>
+
+<form asp-controller="Order" asp-action="StartPayment" method="post">
+    <input type="hidden" name="id" value="@Model.OrderId" />
+    <div class="form-group">
+        <label for="uniqueCode">Payment method</label>
+        <select class="form-control" name="uniqueCode">
+            @foreach ( var method in Model.Methods)
+            {
+                <option value="@method.Key">@method.Value
+
+                </option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Next</button>
+</form>

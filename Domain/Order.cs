@@ -4,7 +4,10 @@
     {
         public int Id { get; set; }
         public int TotalCount => _items.Sum(item => item.Count);
-        public decimal TotalPrice => _items.Sum(item => item.Price * item.Count);
+        public decimal TotalPrice => _items.Sum(item => item.Price * item.Count) + (Delivery?.AmountDelivery ?? 0m);
+        public string CellPhone { get; set; }
+        public OrderDelivery Delivery { get; set; } 
+        public OrderPayment Payment { get; set; }
 
         private List<OrderItem> _items;
         public IReadOnlyCollection<OrderItem> Items // потім переробити щоб лишився тільки "List<OrderItem>" 

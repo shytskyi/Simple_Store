@@ -26,6 +26,7 @@ namespace PresentationLayer
             builder.Services.AddSingleton<IBookRepository, BookRepository>();
             builder.Services.AddSingleton<IOrderRepositiry, OrderRepository>();
             builder.Services.AddSingleton<IDeliveryService, PostamateDeliveryService>();
+            builder.Services.AddSingleton<IPaymentService, CashPaymentService>();
             builder.Services.AddSingleton<BookService>();
 
             var app = builder.Build();

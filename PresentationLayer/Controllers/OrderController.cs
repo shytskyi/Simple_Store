@@ -1,6 +1,7 @@
 ﻿using BusinessLogicLayer.Interfaces;
 using BusinessLogicLayer.Messages;
 using DataAccessLayer.Interfaces;
+using DataAccessLayer.Repository;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
 using PresentationLayer.Models;
@@ -14,13 +15,15 @@ namespace PresentationLayer.Controllers
         private readonly IBookRepository _bookRepository;
         private readonly INotificationService _notificationService;
         private readonly IEnumerable<IDeliveryService> _deliveryService;
+        private readonly IEnumerable<IPaymentService> _paymentService;
 
-        public OrderController(IBookRepository bookRepository, IOrderRepositiry orderRepositiry, INotificationService notificationService, IEnumerable<IDeliveryService> deliveryService)
+        public OrderController(IBookRepository bookRepository, IOrderRepositiry orderRepositiry, INotificationService notificationService, IEnumerable<IDeliveryService> deliveryService, IEnumerable<IPaymentService> paymentService)
         {
             _bookRepository = bookRepository;
             _orderRepositiry = orderRepositiry;
             _notificationService = notificationService;
             _deliveryService = deliveryService;
+            _paymentService = paymentService;
         }
 
         [HttpGet]
@@ -177,7 +180,9 @@ namespace PresentationLayer.Controllers
                 });
             }
 
-            // todo: save CellPhone
+            var order = _orderRepositiry.GetById(id);
+            order.CellPhone = cellPhone;
+            _orderRepositiry.Update(order);
 
             HttpContext.Session.Remove(cellPhone);
             var model = new DeliveryModel
@@ -201,12 +206,53 @@ namespace PresentationLayer.Controllers
         public IActionResult NextDelivery (int id, string uniqueCode, int step, Dictionary<string, string> values) 
         {
             var deliveryService = _deliveryService.Single(service => service.UniqueCode == uniqueCode);
-            var form = deliveryService.MoveNext(id, step, values);
+            var form = deliveryService.NextForm(id, step, values);
             if (form.IsFinal)
             {
-                return null;
+                var order = _orderRepositiry.GetById (id);
+                order.Delivery = deliveryService.GetDelivery(form);
+                _orderRepositiry.Update(order);
+
+                var model = new DeliveryModel
+                {
+                    OrderId = id,
+                    Methods = _paymentService.ToDictionary(service => service.UniqueCode, service => service.Name)
+                };
+                return View("Paymentmethod", model);
             }
             return View("DeliveryStep", form);
+        }
+
+        [HttpPost]
+        public IActionResult StartPayment(int id, string uniqueCode)
+        {
+            var paymentService = _paymentService.Single(service => service.UniqueCode == uniqueCode);
+            var order = _orderRepositiry.GetById(id);
+            var form = paymentService.CreateForm(order);
+            return View("PaymentStep", form);
+        }
+
+        [HttpPost]
+        public IActionResult NextPayment(int id, string uniqueCode, int step, Dictionary<string, string> values)
+        {
+            var paymentService = _paymentService.Single(service => service.UniqueCode == uniqueCode);
+            var form = paymentService.NextForm(id, step, values); 
+            if (form.IsFinal)
+            {
+                var order = _orderRepositiry.GetById(id);
+                order.Payment = paymentService.GetPayment(form);
+                _orderRepositiry.Update(order);
+
+                return View("Finish");
+            }
+            return View("PaymentStep", form);
+        }
+
+        [HttpGet]
+        public IActionResult FinishPayment()
+        {
+            HttpContext.Session.Clear();
+            return Redirect("~/Home/Index");
         }
     }
 }
